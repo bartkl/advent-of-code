@@ -1,7 +1,7 @@
 import itertools
 
 
-EXPENSES_FILE = 'expenses.txt'
+EXPENSES_FILE = 'data/01/expenses.txt'
 
 
 def read_expenses(expenses_filepath):
