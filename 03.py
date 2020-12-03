@@ -5,31 +5,31 @@ MAP_FILE = 'data/03/map.txt'
 
 
 def count_trees(slope):
-    current_pos = [0, 0]
+    x_pos, y_pos = 0, 0
     tree_count = 0
 
     with open(MAP_FILE) as map_:
-        row_length = len(map_.readline().strip())  # Skips first line deliberately.
+        row_length = len(map_.readline().strip())  # This also makes you start
+                                                   # on the first row.
+        while (y_pos := y_pos + 1) and (row := map_.readline().strip()):
 
-        while True:
-            for _ in range(slope[1]):
-                row = map_.readline().strip()
-                current_pos[1] += 1
+            # This moves you to the correct row with respect to the slope.
+            if not y_pos % slope[1] == 0:
+                continue
 
-                if not row:
-                    return tree_count
-            
-            current_pos[0] = (current_pos[0] + slope[0]) % row_length
+            # Wrap around over the x-axis indefinitely.
+            x_pos = (x_pos + slope[0]) % row_length
 
-            if row[current_pos[0]] == '#':
+            if row[x_pos] == '#':
+                print(f'Tree at position: {x_pos, y_pos}')
                 tree_count += 1
 
     return tree_count
 
 
 if __name__ == '__main__':
-    tree_counts = {str(slope): count_trees(slope)
-                   for slope in ((1, 1), (3, 1), (5, 1), (7, 1), (1, 2))}
+    tree_counts = {f'({x}, {y})': count_trees((x, y))
+                   for (x, y) in ((1, 1), (3, 1), (5, 1), (7, 1), (1, 2))}
 
     print(f'Tree counts per slope:\n{tree_counts}')
     print()
