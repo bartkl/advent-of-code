@@ -1,36 +1,52 @@
+from itertools import chain
+
+
 BOARDING_PASSES_FILE = 'data/05/boarding_passes.txt'
 
 
-def get_row_and_col(pass_id):
-    row_chars = pass_id[:7]
-    col_chars = pass_id[7:]
+def read_boarding_passes(passes_file):
+    with open(passes_file) as f:
+        seats = {Seat(specifier.strip()) for specifier in f}
 
-    row_range = list(range(128))
-    for row_char in row_chars:
-        if row_char == 'F':
-            row_range = row_range[0:len(row_range)//2]
-        elif row_char == 'B':
-            row_range = row_range[len(row_range)//2:]
-    row = row_range[0]
+    return seats
 
-    col_range = list(range(8))
-    for col_char in col_chars:
-        if col_char == 'L':
-            col_range = col_range[0:len(col_range)//2]
-        elif col_char == 'R':
-            col_range = col_range[len(col_range)//2:]
-    col = col_range[0]
 
-    return row, col
+class Seat(str):
+    @property
+    def id(self) -> int:
+        mapping = str.maketrans('FBLR', '0101')
+        bin_str = self.translate(mapping)
+
+        return int(bin_str, 2)
+
+    @property
+    def row(self) -> int:
+        return int(self.id / 2**3)
+
+    @property
+    def col(self) -> int:
+        return int(self.id % 2**4)
 
 
 if __name__ == '__main__':
-    with open(BOARDING_PASSES_FILE) as f:
-        seats = []
-        for seat_spec in f:
-            seats.append(get_row_and_col(seat_spec))
+    seats = read_boarding_passes(BOARDING_PASSES_FILE)
 
-    ids = [8*row + col for row, col in seats]
+    # Get max boarding pass ID.
+    max_seat_id = max(s.id for s in seats)
+    print(max_seat_id)
 
-    print(max(ids))
+    # Determine your seat ID.
+    all_seat_ids = set(range(2**10))
+    missing_seat_ids = (
+        all_seat_ids
+        - {s.id for s in seats}
+        - {s_id for s_id in chain(range(2**3),
+                                  range(2**10 - 8, 2**10))}
+    )
 
+    # The seats with IDs +1 and -1 will be in the list, so
+    # in the missing seats list they will _not_ occur.
+    for seat_id in missing_seat_ids:
+        if not {seat_id - 1, seat_id + 1} & missing_seat_ids:
+            print(seat_id)
+            exit()
