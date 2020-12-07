@@ -2,6 +2,10 @@ from collections import UserDict
 import time
 
 
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
+
 class RuleTree(UserDict):
     @classmethod
     def from_file(cls, rules_file):
@@ -43,12 +47,34 @@ class RuleTree(UserDict):
         return suited_bags
 
 
+    def _count_bags_inside(self, keys):
+        if not keys:
+            return 0
+
+        count = 0
+        new_keys = []
+        for key in keys:
+            count += sum(self[key].values())
+            new_keys.extend(flatten([[k] * v for k, v in self[key].items()]))
+
+        return count + self._count_bags_inside(new_keys)
+
+    def count_bags_inside(self, bag):
+        return self._count_bags_inside({bag})
+
+
 
 
 if __name__ == '__main__':
     ruletree = RuleTree.from_file('data/07/rules.txt')
-    suited_bags = ruletree.suited_bags_for('shiny gold bags')
 
-    print(suited_bags)
+    # Amount of containing bags of shiny gold bag.
+    suited_bags = ruletree.suited_bags_for('shiny gold bags')
     print(len(suited_bags))
+
+    # Amount of bags inside my single shiny gold bag.
+    bags_inside_shiny_gold = ruletree.count_bags_inside('shiny gold bags')
+    print(bags_inside_shiny_gold)
+
+
 
