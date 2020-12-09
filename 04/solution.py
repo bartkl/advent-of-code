@@ -2,7 +2,7 @@ from pprint import pprint
 from string import hexdigits
 
 
-PASSPORT_FILE = 'data/04/passports.txt'
+PASSPORT_FILE = 'data/passports.txt'
 
 MANDATORY_FIELDS = ['byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid']
 

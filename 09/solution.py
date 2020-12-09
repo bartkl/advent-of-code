@@ -8,7 +8,7 @@ def read_data(numbers_file):
 
 
 if __name__ == '__main__':
-    data = read_data('data/09/numbers.txt')
+    data = read_data('data/numbers.txt')
 
     # Get first number that's not a sum of any pair in the previous 25 numbers.
     for i in range(25, len(data)):

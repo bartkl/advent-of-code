@@ -1,4 +1,4 @@
-PASSWORDS_FILE = 'data/02/passwords.txt'
+PASSWORDS_FILE = 'data/passwords.txt'
 
 
 def is_valid_password(rule, *, policy_variant):

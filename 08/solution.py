@@ -51,7 +51,7 @@ def replace_nth_instr(boot_code, from_, to, n=0):
 
 
 if __name__ == '__main__':
-    boot_code = parse_boot_code('data/08/boot_code.txt')
+    boot_code = parse_boot_code('data/boot_code.txt')
 
     # Get accumulator value just before second execution of line.
     print(eval_boot_code(boot_code))

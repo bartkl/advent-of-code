@@ -1,7 +1,7 @@
 from math import prod
 
 
-MAP_FILE = 'data/03/map.txt'
+MAP_FILE = 'data/map.txt'
 
 
 def count_trees(slope):

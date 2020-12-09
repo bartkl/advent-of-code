@@ -1,5 +1,5 @@
 if __name__ == '__main__':
-    with open('data/06/answers.txt') as f:
+    with open('data/answers.txt') as f:
         groups_answers = [group for group in f.read().split('\n\n')]
 
     # Find answers that anyone answered yes to.

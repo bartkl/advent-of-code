@@ -66,7 +66,7 @@ class RuleTree(UserDict):
 
 
 if __name__ == '__main__':
-    ruletree = RuleTree.from_file('data/07/rules.txt')
+    ruletree = RuleTree.from_file('data/rules.txt')
 
     # Amount of containing bags of shiny gold bag.
     suited_bags = ruletree.suited_bags_for('shiny gold bags')

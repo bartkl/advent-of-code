@@ -9,7 +9,7 @@ def get_seat_id(seat) -> int:
 
 
 if __name__ == '__main__':
-    with open('data/05/boarding_passes.txt') as f:
+    with open('data/boarding_passes.txt') as f:
         seat_ids = {get_seat_id(seat.strip()) for seat in f}
 
     ### Get max boarding pass ID.
