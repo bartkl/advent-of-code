@@ -2,13 +2,10 @@ from copy import deepcopy
 
 
 def parse_boot_code(boot_code_file):
-    result = []
     with open(boot_code_file) as f:
-        for line in f:
-            op, arg = line.split()
-            result.append([op, int(arg.lstrip('\n'))])
-
-    return result
+        return [[t[0], int(t[1])]
+                for line in f
+                if (t := line.strip('\n').split())]
 
 
 def eval_boot_code(boot_code, line=1, acc=0, cache=None):
