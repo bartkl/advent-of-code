@@ -2,6 +2,8 @@ from collections import Counter
 from itertools import permutations
 from math import prod
 
+import time
+
 
 def count_arrangements(joltages):
     # Assumes sorted joltages.
@@ -20,24 +22,7 @@ def count_arrangements(joltages):
         diff_at_end = partitioning[i+1][0] - partitioning[i][-1]
         size = len(partitioning[i])
 
-        print(f'partition: {partitioning[i]}')
-        print(f'size: {size}')
-        print(f'diff at end: {diff_at_end}')
-
-        if size == 2:
-            if diff_at_end == 2:
-                count *= 3
-            elif diff_at_end == 3:
-                count *= 2
-        elif size == 3:
-            if diff_at_end == 1:
-                count *= 7
-            if diff_at_end == 2:
-                count *= 6
-            elif diff_at_end == 3:
-                count *= 4
-            
-        # count *= len(sorted({p_ for p_ in sorted(set(permutations(p)) if partitioning[i+1][0] - max(p_) <= 3}))
+        count *= int(2**size - 2**(size - (3 - diff_at_end + 1)))
     return count
 
 
