@@ -1,4 +1,45 @@
-import time
+from itertools import product
+
+
+def pause():
+    print('...')
+    input()
+
+
+class AdjacentTiles:
+    def __init__(self, map_, start):
+        self.map_ = map_
+        self.start = start
+
+        self.iterator = zip(*
+            [self._get_generator_for_direction(direction[0], direction[1])
+              for direction in list(product([0, -1, 1], [0, -1, 1]))
+              if list(direction) != [0, 0]])
+
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self.iterator)
+
+
+
+    def _get_generator_for_direction(self, x, y):
+        i = 1
+        while True:
+            try:
+                x_coord = self.start[0] + i * x
+                y_coord = self.start[1] + i * y
+                if any(coord < 0 for coord in (x_coord, y_coord)):
+                    yield 'X'
+
+                val = self.map_[self.start[0]+i*x][self.start[1]+i*y]
+                yield val
+            except IndexError:
+                yield 'X'
+            finally:
+                i += 1
 
 
 class SeatLayoutMap:
@@ -15,44 +56,17 @@ class SeatLayoutMap:
         for row_idx in range(len(self.map)):
             next_map_row = ""
             for col_idx in range(len(self.map[row_idx])):
+                adjacent_tiles_iter = AdjacentTiles(self.map, [row_idx, col_idx])
+                adjacent_tiles = ''.join(next(adjacent_tiles_iter))
+
                 if self.map[row_idx][col_idx] == 'L':
-                    if row_idx == 0:
-                        adjacent_rows = self.map[0:2]
-                    elif row_idx == len(self.map) - 1:
-                        adjacent_rows = self.map[row_idx-1:row_idx+1]
-                    else:
-                        adjacent_rows = self.map[row_idx-1:row_idx+2]
-
-                    if col_idx == 0:
-                        adjacent_tiles = [row[0:2] for row in adjacent_rows]
-                    elif col_idx == len(self.map[0]) - 1:
-                        adjacent_tiles = [row[col_idx-1:col_idx+1] for row in adjacent_rows]
-                    else:
-                        adjacent_tiles = [row[col_idx-1:col_idx+2] for row in adjacent_rows]
-
-                    if all(t != '#' for t in ''.join(adjacent_tiles)):
+                    if all(t != '#' for t in adjacent_tiles):
                         next_map_row += '#'
                     else:
                         next_map_row += 'L'
 
                 elif self.map[row_idx][col_idx] == '#':
-                    # TODO: Make DRY.
-                    if row_idx == 0:
-                        adjacent_rows = self.map[0:2]
-                    elif row_idx == len(self.map) - 1:
-                        adjacent_rows = self.map[row_idx-1:row_idx+1]
-                    else:
-                        adjacent_rows = self.map[row_idx-1:row_idx+2]
-
-                    if col_idx == 0:
-                        adjacent_tiles = [row[0:2] for row in adjacent_rows]
-                    elif col_idx == len(self.map[0]) - 1:
-                        adjacent_tiles = [row[col_idx-1:col_idx+1] for row in adjacent_rows]
-                    else:
-                        adjacent_tiles = [row[col_idx-1:col_idx+2] for row in adjacent_rows]
-
-                    adj_occupied_count = ''.join(adjacent_tiles).count('#') - 1  # -1 for the current tile.
-
+                    adj_occupied_count = adjacent_tiles.count('#')
                     if adj_occupied_count >= 4:
                         next_map_row += 'L'
                     else:
@@ -60,6 +74,7 @@ class SeatLayoutMap:
 
                 else:
                     next_map_row += self.map[row_idx][col_idx]  # Or just hardcoded '.'?
+
             next_map.append(next_map_row)
 
         if next_map != self.map:
@@ -68,8 +83,9 @@ class SeatLayoutMap:
         else:
             raise StopIteration
 
+
 if __name__ == '__main__':
     seat_layout_map = SeatLayoutMap('data/map.txt')
-    for gen in seat_layout_map:
+    for i, gen in enumerate(seat_layout_map):
         pass
     print(''.join(gen).count('#'))
