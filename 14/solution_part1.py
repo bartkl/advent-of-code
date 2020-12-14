@@ -1,6 +1,3 @@
-import time
-
-
 MASK = 'X' * 36
 MEM = {}
 
