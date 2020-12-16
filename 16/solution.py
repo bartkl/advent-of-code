@@ -90,7 +90,7 @@ if __name__ == '__main__':
     for ticket in map(parse_ticket, nearby_tickets.splitlines()[1:]):
         invalids.extend(get_invalid_values_from_ticket(ticket, rules))
 
-    # print(sum(invalids))
+    print(sum(invalids))
 
     # Part 2.
     valid_tickets = [ticket for ticket in map(parse_ticket, nearby_tickets.splitlines()[1:])
