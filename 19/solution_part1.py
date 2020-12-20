@@ -80,18 +80,23 @@ def create_validators(rules):
             VALIDATORS[rule_nr] = create_compound_rule_fn(VALIDATORS, refs)
 
 
-create_validators(SAMPLE_RULES)
-VALIDATORS['0']('aaaabbb')
+def validate(txt, start_at_rule='0'):
+    txt = VALIDATORS[start_at_rule](txt)
 
-create_validators(RULES)
-count = 0
-for msg in MESSAGES:
-    try:
-        txt = VALIDATORS['0'](msg)
-        if not txt:
-            count += 1
-    except ValidationError:
-        pass
+    return bool(not txt)
 
-print(count)
+
+if __name__ == "__main__":
+    create_validators(RULES)
+
+    count = 0
+    for msg in MESSAGES:
+        try:
+            valid = validate(msg)
+            if valid:
+                count += 1
+        except ValidationError:
+            pass
+
+    print(count)
 
