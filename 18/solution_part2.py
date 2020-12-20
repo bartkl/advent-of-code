@@ -17,36 +17,46 @@ def evaluate(expr: str) -> int:
         if t == ')':
             parens_closed += 1
             if parens_opened == parens_closed:
-                # args.append(sub_expr)
                 args.append(evaluate(sub_expr))
                 sub_expr = ''
         if parens_opened > parens_closed:
-            # if parens_opened == 1 and t == '(':
-            #     continue
             sub_expr += t
             continue
 
         if t.isdigit():
             if args and args[-1] in ['+', '*']:
-                args.append(t)
+                args.append(int(t))
             else:
                 if args:
-                    args[-1] += t
+                    args[-1] += int(t)
                 else:
-                    args.append(t)
+                    args.append(int(t))
 
         elif t in ['+', '*']:
             args.append(t)
 
-    print(args)
-    val = int(args.pop(0))
-    while args:
-        op = {"+": operator.add, "*": operator.mul}[args.pop(0)]
-        n = int(args.pop(0))
+    while len(args) != 1:
+        try:
+            op_idx = args.index('+')
+            # print(args)
+            args[op_idx - 1 : op_idx + 2] = [args[op_idx - 1] + args[op_idx + 1]]
+            # print(args)
+            # input()
+            continue
+        except ValueError:
+            pass
 
-        val = op(val, n)
+        try:
+            op_idx = args.index('*')
+            # print(op_idx)
+            # print(args)
+            args[op_idx - 1 : op_idx + 2] = [args[op_idx - 1] * args[op_idx + 1]]
+            # print(args)
+            # input()
+        except ValueError:
+            break  # Shouldn't happen.
 
-    return val
+    return args[0]
 
 
 
