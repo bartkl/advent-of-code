@@ -96,5 +96,5 @@ if __name__ == "__main__":
     val = next(pocket_dimension)
     val = next(pocket_dimension)
     val = next(pocket_dimension)
-    print(val)
+    print(val)  # Counted the hashes in editor...
 
