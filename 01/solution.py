@@ -1,6 +1,6 @@
 from pathlib import Path
 
-DEPTHS = Path("data") / "input.txt"
+DEPTHS = Path("input.txt")
 
 
 def answer_1():
