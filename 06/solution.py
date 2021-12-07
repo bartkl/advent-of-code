@@ -1,6 +1,8 @@
 from collections import deque, Counter
 from pathlib import Path
-from more_itertools import nth
+from more_itertools import nth  # `more_itertools` can be installed from PyPi,
+                                # but I took these definitions from the `itertools`
+                                # stdlib documentation.
 
 
 def read_puzzle_input(text_file: Path):
