@@ -1,3 +1,4 @@
+from collections import Counter
 from pathlib import Path
 from more_itertools import nth
 
@@ -6,28 +7,27 @@ INPUT = Path("input.txt")
 
 def read_initial_state(text_file):
     text = text_file.read_text()
-    return [int(internal_timer) for internal_timer in text.split(",")]
+    return Counter(int(internal_timer) for internal_timer in text.split(","))
+
+
+def decrement_counter_keys(c):
+    for key in sorted(c.keys()):
+        c[key - 1] = c.pop(key)
 
 
 def evolve(population):
-    yield population
-
     while True:
-        newly_borns = 0
-        for i, fish in enumerate(population):
-            if fish == 0:
-                population[i] = 6
-                newly_borns += 1
-            else:
-                population[i] -= 1
+        decrement_counter_keys(population)
+        if -1 in population.keys():
+            population.update({6: population[-1]})
+            population.update({8: population[-1]})
+            del population[-1]
 
-        population.extend([8] * newly_borns)
         yield population
 
 
 if __name__ == "__main__":
     init_state = read_initial_state(INPUT)
-    print(init_state)
     e = evolve(init_state)
-    _80th = nth(e, 256)
-    print(len(_80th))
+    x = nth(e, 255)
+    print(sum(x.values()))
