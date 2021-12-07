@@ -14,13 +14,12 @@ def count_fish_by_internal_timer(state):
 
 
 def evolve_fish_population_counts(counts):
-    yield counts  # Day 0 counts on initialization.
     while True:
+        yield counts
         counts.rotate(-1)
         if counts[8] > 0:
             counts[6] += counts[8]
 
-        yield counts
 
 
 if __name__ == "__main__":
