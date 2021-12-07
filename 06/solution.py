@@ -1,6 +1,6 @@
 from collections import deque, Counter
 from pathlib import Path
-from more_itertools import nth, consume
+from more_itertools import nth
 
 
 def read_puzzle_input(text_file: Path):
@@ -32,5 +32,5 @@ if __name__ == "__main__":
     # print(total_fish_count_after_80_days)
 
     # Question 2, for 256 days.
-    total_fish_count_after_80_days = sum(nth(fish_population_counts_evolution, 256))
-    print(total_fish_count_after_80_days)
+    total_fish_count_after_256_days = sum(nth(fish_population_counts_evolution, 256))
+    print(total_fish_count_after_256_days)
