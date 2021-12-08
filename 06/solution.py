@@ -19,8 +19,7 @@ def evolve_fish_population_counts(counts):
     while True:
         yield counts
         counts.rotate(-1)
-        if counts[8] > 0:
-            counts[6] += counts[8]
+        counts[6] += counts[8]
 
 
 
