@@ -104,7 +104,7 @@ class HeightMap:
         if len(neighbours) == 0:
             return basin
 
-        return basin | self.fill_basin(basin | neighbours, processed)
+        return self.fill_basin(basin | neighbours, processed)
 
 
 if __name__ == "__main__":
