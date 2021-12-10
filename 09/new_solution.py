@@ -1,5 +1,7 @@
 from copy import deepcopy
 from collections import Counter
+from functools import reduce
+import operator
 from itertools import product, count
 from pathlib import Path
 from typing import List, Dict, Tuple, Set, Any
@@ -32,6 +34,11 @@ class HeightMap:
     def __init__(self, data: List[List[int]]):
         self._data = data
 
+    def __iter__(self):
+        """Creates an iterator that yields the indices of the data."""
+
+        return product(range(self.num_rows), range(self.num_cols))
+
     @property
     def num_rows(self):
         return len(self._data)
@@ -55,7 +62,7 @@ class HeightMap:
     def find_low_points(self):
         low_points: Dict[Coords, int] = {}
 
-        for i, j in product(range(self.num_rows), range(self.num_cols)):
+        for (i, j) in self:
             if all(self._data[i][j] < self._data[k][l] for k, l in self.get_neighbours(i, j).values()):
                 low_points[i, j] = self._data[i][j]
 
@@ -102,10 +109,10 @@ if __name__ == "__main__":
     # Answer 1.
     low_points = height_map.find_low_points()
     risk = sum(height_map.calculate_risk_level(i, j) for i, j in low_points)
-    # print(risk)
+    print(risk)
 
     # Answer 2.
     basins = height_map.fill_basins_on_map()
 
-    basin_counts = Counter(val for i, j in product(range(height_map.num_rows), range(height_map.num_cols)) if (val := basins[i][j]) != 9)
-    print(sorted(basin_counts.values(), reverse=True))
+    basin_counts = Counter(val for (i, j) in height_map if (val := basins[i][j]) != 9)
+    print(reduce(operator.mul, sorted(basin_counts.values(), reverse=True)[:3], 1))
