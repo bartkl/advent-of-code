@@ -114,7 +114,7 @@ class HeightMap:
         return self._fill_basin_on_map(relevant_neighbours, hmap, basin_tag)
 
     def fill_basins_on_map(self) -> List[List[Any]]:
-        """Mark all basins on the height map.
+        """Marks all basins on the height map.
 
         Makes a copy of the height map so that it can be mutated
         safely. On this copy, basin after basin is marked recursively.
