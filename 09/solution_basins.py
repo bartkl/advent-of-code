@@ -121,6 +121,7 @@ if __name__ == "__main__":
     basins = hmap.partition_basins()
 
     pprint(basins)
+    print(len(basins))
 
     c = Counter(len(b) for b in basins)
     print(c)
