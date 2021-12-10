@@ -13,7 +13,7 @@ class Coords(NamedTuple):
     j: int
 
     @classmethod
-    def from_tuple(cls, t):
+    def from_tuple(cls, t):  # NOTE: You cannot override `__new__`, so I do it this way.
         return cls(t[0], t[1])
 
     def __add__(self, other):
@@ -46,7 +46,8 @@ class HeightMap:
     def __iter__(self):
         """Creates an iterator that yields the indices of the data."""
 
-        # return (Coords(i, j) for (i, j) in product(range(self.num_rows), range(self.num_cols)))
+        # Another way of doing it which would make `from_tuple` redundant:
+        #    return (Coords(i, j) for (i, j) in product(range(self.num_rows), range(self.num_cols)))
         return map(Coords.from_tuple, product(range(self.num_rows), range(self.num_cols)))
 
     @property
@@ -72,7 +73,7 @@ class HeightMap:
         low_points: Dict[Coords, int] = {}
 
         for p in self:
-            if all(self._data[p.i][p.j] < self._data[k][l] for k, l in self.get_neighbours(p).values()):
+            if all(self._data[p.i][p.j] < self._data[n.i][n.j] for n in self.get_neighbours(p).values()):
                 low_points[p] = self._data[p.i][p.j]
 
         return low_points
@@ -80,28 +81,51 @@ class HeightMap:
     def calculate_risk_level(self, p: Coords):
         return self._data[p.i][p.j] + 1
 
-    def _fill_basin_on_map(self, basin: Set[Coords], hmap_data, basin_tag):
-        """Draws out the basins points on the given copy of the height map.
+    def _fill_basin_on_map(self, basin: Set[Coords], hmap, basin_tag):
+        """Marks the basin's points on the given height map.
 
-        The height map `hmap_data` is mutated recursively until there's no
-        neighbours left to add.
+        This function returns when it has marked all the points
+        belonging to `basin` on the height map `hmap` with the
+        associated `basin_tag`. Note that marking is done by
+        replacing the point's value in `hmap` (in-place) by
+        `basin_tag`.
+
+        Because `hmap` is mutated, it can be used for other basins
+        in later calls, ultimately marking all the basins on this
+        `hmap`.
+
+        The way this function finds all the points belonging to
+        the basin, is by recursively adding all the neighbours that
+        are not yet part of any basin, and don't have value 9. If no
+        such neighbours are left to select, the job is done for this
+        basin.
         """
 
         relevant_neighbours = {
             n
             for p in basin
             for n in self.get_neighbours(p).values()
-            if hmap_data[n.i][n.j] in range(0, 9)}
+            if hmap[n.i][n.j] in range(0, 9)}
 
         for n in basin | relevant_neighbours:
-            hmap_data[n.i][n.j] = basin_tag
+            hmap[n.i][n.j] = basin_tag
 
         if len(relevant_neighbours) == 0:
-            return basin
+            return
 
-        return self._fill_basin_on_map(relevant_neighbours, hmap_data, basin_tag)
+        return self._fill_basin_on_map(relevant_neighbours, hmap, basin_tag)
 
     def fill_basins_on_map(self) -> List[List[Any]]:
+        """Mars all basins on the height map.
+
+        Makes a copy of the height map so that it can be mutated
+        safely. On this copy, basin after basin is marked recursively.
+
+        Makes use of the insight that each low point corresponds
+        to exactly one basin, so those are used as starting points
+        for filling.
+        """
+
         hmap_data = deepcopy(self._data)
         low_points = self.find_low_points()
 
