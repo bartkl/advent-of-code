@@ -1,7 +1,5 @@
 from copy import deepcopy
 from collections import Counter
-from functools import reduce
-import operator
 from itertools import product, count
 from pathlib import Path
 from typing import List, Dict, Set, Any, NamedTuple
@@ -148,6 +146,6 @@ if __name__ == "__main__":
     basins = height_map.fill_basins_on_map()
 
     basin_counts = Counter(val for (i, j) in height_map if (val := basins[i][j]) != 9)
-    three_biggest_basin_sizes = sorted(basin_counts.values(), reverse=True)[:3]
-    prod = reduce(operator.mul, three_biggest_basin_sizes, 1)
-    print(prod)
+    sorted_basin_sizes = sorted(basin_counts.values(), reverse=True)
+    three_biggest_basin_sizes_prod = sorted_basin_sizes[0] * sorted_basin_sizes[1] * sorted_basin_sizes[2]
+    print(three_biggest_basin_sizes_prod)
