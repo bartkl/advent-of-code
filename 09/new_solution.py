@@ -64,7 +64,7 @@ class HeightMap:
 
         for (i, j) in self:
             if all(self._data[i][j] < self._data[k][l] for k, l in self.get_neighbours(i, j).values()):
-                low_points[i, j] = self._data[i][j]
+                low_points[(i, j)] = self._data[i][j]
 
         return low_points
 
@@ -80,11 +80,11 @@ class HeightMap:
 
         relevant_neighbours = {
             (ni, nj)
-            for i, j in basin
-            for ni, nj in self.get_neighbours(i, j).values()
+            for (i, j) in basin
+            for (ni, nj) in self.get_neighbours(i, j).values()
             if hmap_data[ni][nj] in range(0, 9)}
 
-        for ni, nj in basin | relevant_neighbours:
+        for (ni, nj) in basin | relevant_neighbours:
             hmap_data[ni][nj] = basin_tag
 
         if len(relevant_neighbours) == 0:
@@ -97,7 +97,7 @@ class HeightMap:
         low_points = self.find_low_points()
 
         basin_tag_generator = map(str, count())
-        for i, j in low_points:
+        for (i, j) in low_points:
             self._fill_basin_on_map({(i, j)}, hmap_data, next(basin_tag_generator))
 
         return hmap_data
@@ -108,11 +108,13 @@ if __name__ == "__main__":
 
     # Answer 1.
     low_points = height_map.find_low_points()
-    risk = sum(height_map.calculate_risk_level(i, j) for i, j in low_points)
+    risk = sum(height_map.calculate_risk_level(i, j) for (i, j) in low_points)
     print(risk)
 
     # Answer 2.
     basins = height_map.fill_basins_on_map()
 
     basin_counts = Counter(val for (i, j) in height_map if (val := basins[i][j]) != 9)
-    print(reduce(operator.mul, sorted(basin_counts.values(), reverse=True)[:3], 1))
+    three_biggest_basin_sizes = sorted(basin_counts.values(), reverse=True)[:3]
+    prod = reduce(operator.mul, three_biggest_basin_sizes, 1)
+    print(prod)
