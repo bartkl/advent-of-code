@@ -4,18 +4,27 @@ from functools import reduce
 import operator
 from itertools import product, count
 from pathlib import Path
-from typing import List, Dict, Tuple, Set, Any
+from typing import List, Dict, Set, Any, NamedTuple
 from enum import Enum
 
 
-Coords = Tuple[int, int]
+class Coords(NamedTuple):
+    i: int
+    j: int
+
+    @classmethod
+    def from_tuple(cls, t):
+        return cls(t[0], t[1])
+
+    def __add__(self, other):
+        return Coords(self[0] + other[0], self[1] + other[1])
 
 
 class Direction(Enum):
-    LEFT = (0, -1)
-    UP = (-1, 0)
-    RIGHT = (0, 1)
-    BOTTOM = (1, 0)
+    LEFT = Coords(0, -1)
+    UP = Coords(-1, 0)
+    RIGHT = Coords(0, 1)
+    BOTTOM = Coords(1, 0)
 
 
 TEST_INPUT_FILE = Path("test_input.txt")
@@ -37,7 +46,8 @@ class HeightMap:
     def __iter__(self):
         """Creates an iterator that yields the indices of the data."""
 
-        return product(range(self.num_rows), range(self.num_cols))
+        # return (Coords(i, j) for (i, j) in product(range(self.num_rows), range(self.num_cols)))
+        return map(Coords.from_tuple, product(range(self.num_rows), range(self.num_cols)))
 
     @property
     def num_rows(self):
@@ -47,29 +57,28 @@ class HeightMap:
     def num_cols(self):
         return len(self._data[0])
 
-    def get_neighbours(self, i, j):
+    def get_neighbours(self, p: Coords):
         neighbours = {}
-        for direction in Direction:
-            di, dj = direction.value
-            ni = i + di
-            nj = j + dj
 
-            if (0 <= ni < self.num_rows) and (0 <= nj < self.num_cols):
-                neighbours[direction] = (ni, nj)
+        for d in Direction:
+            n = p + d.value
+
+            if (0 <= n.i < self.num_rows) and (0 <= n.j < self.num_cols):
+                neighbours[d] = n
 
         return neighbours
 
     def find_low_points(self):
         low_points: Dict[Coords, int] = {}
 
-        for (i, j) in self:
-            if all(self._data[i][j] < self._data[k][l] for k, l in self.get_neighbours(i, j).values()):
-                low_points[(i, j)] = self._data[i][j]
+        for p in self:
+            if all(self._data[p.i][p.j] < self._data[k][l] for k, l in self.get_neighbours(p).values()):
+                low_points[p] = self._data[p.i][p.j]
 
         return low_points
 
-    def calculate_risk_level(self, i, j):
-        return self._data[i][j] + 1
+    def calculate_risk_level(self, p: Coords):
+        return self._data[p.i][p.j] + 1
 
     def _fill_basin_on_map(self, basin: Set[Coords], hmap_data, basin_tag):
         """Draws out the basins points on the given copy of the height map.
@@ -79,13 +88,13 @@ class HeightMap:
         """
 
         relevant_neighbours = {
-            (ni, nj)
-            for (i, j) in basin
-            for (ni, nj) in self.get_neighbours(i, j).values()
-            if hmap_data[ni][nj] in range(0, 9)}
+            n
+            for p in basin
+            for n in self.get_neighbours(p).values()
+            if hmap_data[n.i][n.j] in range(0, 9)}
 
-        for (ni, nj) in basin | relevant_neighbours:
-            hmap_data[ni][nj] = basin_tag
+        for n in basin | relevant_neighbours:
+            hmap_data[n.i][n.j] = basin_tag
 
         if len(relevant_neighbours) == 0:
             return basin
@@ -97,8 +106,8 @@ class HeightMap:
         low_points = self.find_low_points()
 
         basin_tag_generator = map(str, count())
-        for (i, j) in low_points:
-            self._fill_basin_on_map({(i, j)}, hmap_data, next(basin_tag_generator))
+        for p in low_points:
+            self._fill_basin_on_map({p}, hmap_data, next(basin_tag_generator))
 
         return hmap_data
 
@@ -108,7 +117,7 @@ if __name__ == "__main__":
 
     # Answer 1.
     low_points = height_map.find_low_points()
-    risk = sum(height_map.calculate_risk_level(i, j) for (i, j) in low_points)
+    risk = sum(height_map.calculate_risk_level(p) for p in low_points)
     print(risk)
 
     # Answer 2.
