@@ -98,8 +98,17 @@ class EnergyLevels:
 
 if __name__ == "__main__":
     energy_levels = EnergyLevels.from_file(DATA_FILE)
-    print(energy_levels._data)
+
+    # Answer 1.
     for _ in range(100):
         energy_levels.progress_energy_levels()
-    print(energy_levels._data)
     print(energy_levels.num_flashes)
+
+    # Answer 2.
+    step = 1
+    while True:
+        energy_levels.progress_energy_levels()
+        if all(energy_levels._data[p.i][p.j] == 0 for p in energy_levels):
+            break
+        step += 1
+    print(step)
