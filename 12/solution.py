@@ -1,4 +1,5 @@
-from copy import deepcopy
+from itertools import chain
+
 from pathlib import Path
 from typing import List, Optional
 
@@ -88,7 +89,7 @@ def read_data_file(data_file: Path):
 #
 #     return build_all_paths(connections, paths)
 
-def build_all_paths(connections, paths: Optional[List[List[str]]] = None):
+def build_all_paths(connections, paths: Optional[List[List[str]]] = None, twice_allowed_cave = None):
     if paths is None:
         paths = [["start"]]
 
@@ -100,7 +101,7 @@ def build_all_paths(connections, paths: Optional[List[List[str]]] = None):
         try:
             path = paths[i]
         except IndexError:
-            return build_all_paths(connections, paths)
+            return build_all_paths(connections, paths, twice_allowed_cave)
 
         last_cave = path[-1]
         if last_cave == "end":
@@ -109,8 +110,11 @@ def build_all_paths(connections, paths: Optional[List[List[str]]] = None):
 
         continuations = []
         for next_cave in connections[last_cave]:
-            if next_cave.islower() and next_cave in path:
-                continue
+            if next_cave.islower():
+                if next_cave == twice_allowed_cave and path.count(next_cave) == 2:
+                    continue
+                elif next_cave != twice_allowed_cave and next_cave in path:
+                    continue
             continuations.append(path + [next_cave])
 
         paths[i:i + 1] = continuations
@@ -119,9 +123,18 @@ def build_all_paths(connections, paths: Optional[List[List[str]]] = None):
 
 
 if __name__ == "__main__":
-    c = read_data_file(DATA_FILE)
-    print(c)
+    # connections = read_data_file(TEST_DATA_FILE)
+    connections = read_data_file(DATA_FILE)
+    # print(c)
 
-    p = build_all_paths(c)
-    print(p)
-    print(len(p))
+    small_caves = set(c for c in chain(*connections.values(), connections.keys()) if c.islower() and c not in ("end", "start"))
+    # {'gt', 'zf', 'so', 'ly', 'ui', 'bt'}
+
+    print(small_caves)
+    paths = []
+    for twice_allowed_cave in small_caves:
+        for path in build_all_paths(connections, twice_allowed_cave=twice_allowed_cave):
+            if path not in paths:
+                paths.append(path)
+    # print(paths)
+    print(len(paths))
