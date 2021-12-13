@@ -1,79 +1,80 @@
 from __future__ import annotations
 from pathlib import Path
 from itertools import zip_longest
+from typing import Set, List, Tuple
+
+
+PaperDot = Tuple[int, int]
+PaperDots = Set[PaperDot]
+FoldInstruction = Tuple[str, int]
+FoldInstructions = List[FoldInstruction]
 
 
 TEST_DATA_FILE = Path("test_input.txt")
 DATA_FILE = Path("input.txt")
 
 
-def read_instructions(data_file: Path):
-    paper = set()
-    folds = []
+class Paper:
+    @classmethod
+    def from_file(cls, data_file: Path) -> Paper:
+        instructions = data_file.read_text().split("\n\n")
 
-    for line in map(str.rstrip, data_file.open()):
-        if not line:
-            continue
-        if line.startswith("fold"):
-            fold_direction, fold_location = line.split()[2].split("=")
-            folds.append((fold_direction, int(fold_location)))
-        else:
-            paper.add(tuple(map(int, line.split(","))))
+        paper_dots = {(int(x), int(y)) for x, y in (line.split(",") for line in instructions[0].splitlines())}
+        fold_instructions = [(direction, int(location)) for direction, location in (line.split()[-1].split("=") for line in instructions[1].splitlines())]
 
-    return paper, folds
+        return cls(paper_dots, fold_instructions)
+
+    def __init__(self, dots: PaperDots, fold_instructions: FoldInstructions):
+        self.dots = dots
+        self.fold_instructions = iter(fold_instructions)
+
+    @property
+    def width(self):
+        return max(c[0] for c in self.dots)
+
+    @property
+    def height(self):
+        return max(c[1] for c in self.dots)
+
+    def fold(self):
+        for fold_instruction in self.fold_instructions:
+            direction, location = fold_instruction
+            folded_paper = set()
+
+            if direction == "x":
+                for y in range(self.height + 1):
+                    left = range(location - 1, -1, -1)
+                    right = range(location + 1, self.width + 1)
+                    for i, (l, r) in enumerate(reversed(list(zip_longest(left, right)))):
+                        if (l, y) in self.dots or (r, y) in self.dots:
+                            folded_paper.add((i, y))
+            elif direction == "y":
+                for x in range(self.width + 1):
+                    top = range(location - 1, -1, -1)
+                    bottom = range(location + 1, self.height + 1)
+                    for i, (t, b) in enumerate(reversed(list(zip_longest(top, bottom)))):
+                        if (x, t) in self.dots or (x, b) in self.dots:
+                            folded_paper.add((x, i))
+            self.dots = folded_paper
+            yield self.dots
 
 
-def fold(paper, fold_instruction):
-    paper_width = max(c[0] for c in paper)
-    paper_height = max(c[1] for c in paper)
-
-    direction, location = fold_instruction
-    folded_paper = set()
-    if direction == "x":
-        for y in range(paper_height + 1):
-            left = range(location - 1, -1, -1)
-            right = range(location + 1, paper_width + 1)
-            for i, (l, r) in enumerate(reversed(list(zip_longest(left, right)))):
-                if (l, y) in paper or (r, y) in paper:
-                    folded_paper.add((i, y))
-    elif direction == "y":
-        for x in range(paper_width + 1):
-            top = range(location - 1, -1, -1)
-            bottom = range(location + 1, paper_height + 1)
-            for i, (t, b) in enumerate(reversed(list(zip_longest(top, bottom)))):
-                if (x, t) in paper or (x, b) in paper:
-                    folded_paper.add((x, i))
-    return folded_paper
-
-
-def print_paper(paper):
-    paper_width = max(c[0] for c in paper)
-    paper_height = max(c[1] for c in paper)
-
-    for j in range(paper_height + 1):
-        for i in range(paper_width + 1):
-            if (i, j) in paper:
-                print("#", end='')
-            else:
-                print(".", end='')
-        print()
-
+    def print(self):
+        for j in range(self.height + 1):
+            for i in range(self.width + 1):
+                if (i, j) in paper.dots:
+                    print("#", end='')
+                else:
+                    print(".", end='')
+            print()
 
 
 if __name__ == "__main__":
-    paper, fold_instructions = read_instructions(DATA_FILE)
+    paper = Paper.from_file(TEST_DATA_FILE)
+    fold = paper.fold()
+    print(f"Answer to question 1: {len(paper.dots)}.")
 
-    # Answer 1.
-    # for fold_instruction in fold_instructions:
-    #     paper = fold(paper, fold_instruction)
-    # print(paper)
-    # print(len(paper))
+    for _ in fold: pass  # Perform all other folds.
+    print(f"Answer to question 2 can be read from the following print:\n")
+    paper.print()
 
-
-    # Answer 2.
-    # print_paper(paper)
-    for fold_instruction in fold_instructions:
-
-        paper = fold(paper, fold_instruction)
-    print_paper(paper)
-    # print(len(paper))
