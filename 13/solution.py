@@ -33,14 +33,14 @@ def fold(paper, fold_instruction):
         for y in range(paper_height + 1):
             left = range(location - 1, -1, -1)
             right = range(location + 1, paper_width + 1)
-            for i, (l, r) in enumerate(zip_longest(left, right)):
+            for i, (l, r) in enumerate(reversed(list(zip_longest(left, right)))):
                 if (l, y) in paper or (r, y) in paper:
                     folded_paper.add((i, y))
     elif direction == "y":
         for x in range(paper_width + 1):
             top = range(location - 1, -1, -1)
             bottom = range(location + 1, paper_height + 1)
-            for i, (t, b) in enumerate(zip_longest(top, bottom)):
+            for i, (t, b) in enumerate(reversed(list(zip_longest(top, bottom)))):
                 if (x, t) in paper or (x, b) in paper:
                     folded_paper.add((x, i))
     return folded_paper
@@ -50,11 +50,8 @@ def print_paper(paper):
     paper_width = max(c[0] for c in paper)
     paper_height = max(c[1] for c in paper)
 
-    print(paper_width)
-    print(paper_height)
-
-    for j in range(paper_height, -1, -1):  # NOTE: Bug, why reverse?
-        for i in range(paper_width, -1, -1):
+    for j in range(paper_height + 1):
+        for i in range(paper_width + 1):
             if (i, j) in paper:
                 print("#", end='')
             else:
