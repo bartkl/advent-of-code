@@ -16,7 +16,7 @@ DATA_FILE = Path("input.txt")
 
 class Paper:
     @classmethod
-    def from_file(cls, data_file: Path) -> Paper:
+    def from_file(cls, data_file: Path):
         instructions = data_file.read_text().split("\n\n")
 
         paper_dots = {(int(x), int(y)) for x, y in (line.split(",") for line in instructions[0].splitlines())}
@@ -36,28 +36,39 @@ class Paper:
     def height(self):
         return max(c[1] for c in self.dots)
 
+    def _fold(self, fold_instruction: FoldInstruction):
+        direction, location = fold_instruction
+        folded_paper_dots = set()
+
+        if direction == "x":
+            line_max = self.height + 1
+            other_line_max = self.width + 1
+
+            def is_dot(line, *x_coords):
+                return any((x, line) in self.dots for x in x_coords)
+        else:
+            line_max = self.width + 1
+            other_line_max = self.height + 1
+
+            def is_dot(line, *y_coords):
+                return any((line, y) in self.dots for y in y_coords)
+
+        for line in range(line_max):
+            first_half = range(location - 1, -1, -1)
+            second_half = range(location + 1, other_line_max)
+            for i, (a, b) in enumerate(reversed(list(zip_longest(first_half, second_half)))):
+                if is_dot(line, a, b):
+                    if direction == "x": p = (i, line)
+                    if direction == "y": p = (line, i)
+                    folded_paper_dots.add(p)
+
+        return folded_paper_dots
+
     def fold(self):
         for fold_instruction in self.fold_instructions:
-            direction, location = fold_instruction
-            folded_paper = set()
-
-            if direction == "x":
-                for y in range(self.height + 1):
-                    left = range(location - 1, -1, -1)
-                    right = range(location + 1, self.width + 1)
-                    for i, (l, r) in enumerate(reversed(list(zip_longest(left, right)))):
-                        if (l, y) in self.dots or (r, y) in self.dots:
-                            folded_paper.add((i, y))
-            elif direction == "y":
-                for x in range(self.width + 1):
-                    top = range(location - 1, -1, -1)
-                    bottom = range(location + 1, self.height + 1)
-                    for i, (t, b) in enumerate(reversed(list(zip_longest(top, bottom)))):
-                        if (x, t) in self.dots or (x, b) in self.dots:
-                            folded_paper.add((x, i))
-            self.dots = folded_paper
+            folded_paper_dots = self._fold(fold_instruction)
+            self.dots = folded_paper_dots
             yield self.dots
-
 
     def print(self):
         for j in range(self.height + 1):
