@@ -1,3 +1,5 @@
+from timeit import default_timer
+from array import array
 from itertools import chain
 
 from pathlib import Path
@@ -8,90 +10,25 @@ TEST_DATA_FILE = Path("test_input.txt")
 DATA_FILE = Path("input.txt")
 
 
-class AlreadyVisitedError(Exception):
-    pass
-
-
-class Cave:
-    def __init__(self, name: str):
-        self.name: str = name
-        self._num_visited = 0
-
-    def __repr__(self):
-        return f"<Cave(name={self.name})>"
-
-    def __hash__(self):
-        return int.from_bytes(self.name.encode("ascii"), "big")
-
-    def __eq__(self, other):
-        return self.name == other.name
-
-    @property
-    def visited(self):
-        return self._num_visited == 0
-
-    @property
-    def num_visited(self):
-        return self._num_visited
-
-    def is_small(self):
-        return self.name.islower()
-
-    def is_big(self):
-        return not self.is_small()
-
-    @num_visited.setter
-    def num_visited(self, value):
-        if self.is_small() and self._num_visited > 0:
-            raise AlreadyVisitedError()
-
-        self._num_visited = value
-
-    def add_connected_path(self):
-        pass
-
-
 def read_data_file(data_file: Path):
     cave_connections = {}
     for line in data_file.open():
         a, b = line.rstrip().split("-")
         cave_connections.setdefault(a, []).append(b)
         cave_connections.setdefault(b, []).append(a)
-    return cave_connections
 
+    caves = set(chain(*cave_connections.values(), cave_connections.keys()))
+    caves_int = {0: "start", **{(10 + i) if v.isupper() else i: v for i, v in enumerate((c for c in caves if c not in ["start", "end"]), 1)}, 12: "end"}
+    print(caves_int)
+    cave_connections_int = {caves_int.index(k): [caves_int.index(_v) for _v in v] for k, v in cave_connections.items()}
+    print(cave_connections_int)
 
-# def build_all_paths(connections, paths: Optional[List[List[str]]] = None):
-#     if paths is None:
-#         paths = [["start"]]
-#
-#     i = 0
-#     while True:
-#         try:
-#             path = paths[i]
-#         except IndexError:
-#             break
-#
-#         if all(p[-1] == "end" for p in paths):
-#             return
-#
-#         last_cave = path[-1]
-#         if last_cave == "end":
-#             continue
-#
-#         continuations = []
-#         for next_cave in connections[last_cave]:
-#             if next_cave.islower() and next_cave in path:
-#                 continue
-#             continuations.append(path + [next_cave])
-#
-#         paths[i:i + 1] = continuations
-#         i += len(continuations)
-#
-#     return build_all_paths(connections, paths)
+    return caves_int, cave_connections_int
+
 
 def build_all_paths(connections, paths: Optional[List[List[str]]] = None, twice_allowed_cave = None):
     if paths is None:
-        paths = [["start"]]
+        paths = [[0]]
 
     if all(p[-1] == "end" for p in paths):
         return paths
@@ -104,11 +41,11 @@ def build_all_paths(connections, paths: Optional[List[List[str]]] = None, twice_
             return build_all_paths(connections, paths, twice_allowed_cave)
 
         last_cave = path[-1]
-        if last_cave == "end":
+        if last_cave == 1:
             i += 1
             continue
 
-        continuations = []
+        continuations = array("b")
         for next_cave in connections[last_cave]:
             if next_cave.islower():
                 if next_cave == twice_allowed_cave and path.count(next_cave) == 2:
@@ -123,18 +60,20 @@ def build_all_paths(connections, paths: Optional[List[List[str]]] = None, twice_
 
 
 if __name__ == "__main__":
+    start = default_timer()
     # connections = read_data_file(TEST_DATA_FILE)
-    connections = read_data_file(DATA_FILE)
+    caves_int, caves_connections = read_data_file(DATA_FILE)
     # print(c)
 
-    small_caves = set(c for c in chain(*connections.values(), connections.keys()) if c.islower() and c not in ("end", "start"))
+    small_caves = set(c for c in chain(*caves_connections.values(), caves_connections.keys()) if c.islower() and c not in (0, 1))
     # {'gt', 'zf', 'so', 'ly', 'ui', 'bt'}
 
     print(small_caves)
     paths = []
     for twice_allowed_cave in small_caves:
-        for path in build_all_paths(connections, twice_allowed_cave=twice_allowed_cave):
+        for path in build_all_paths(caves_connections, twice_allowed_cave=twice_allowed_cave):
             if path not in paths:
                 paths.append(path)
     # print(paths)
     print(len(paths))
+    print(default_timer() - start)
