@@ -20,26 +20,28 @@ class PolymerFormula:
 
         self.template = template
         self.rules = rules
+
         self._init_pair_counts()
 
     def _init_pair_counts(self):
         template_pairs = ["".join(pair) for pair in pairwise(self.template)]
+
         self._pair_counts = Counter(dict.fromkeys(self.rules.keys(), 0))
         self._pair_counts.update(template_pairs)
 
     def _progress_one_step(self):
-        changes = dict.fromkeys(self._pair_counts, 0)
+        changes = Counter(dict.fromkeys(self._pair_counts, 0))
+
         for pair in self._pair_counts:
             if self._pair_counts[pair] == 0:
                 continue
 
             new_element = self.rules[pair]
-            new_pairs = (pair[0] + new_element, new_element + pair[1])
-
-            for p in new_pairs:
-                changes[p] += self._pair_counts[pair]
+            new_pairs = [pair[0] + new_element, new_element + pair[1]]
+            changes.update(dict.fromkeys(new_pairs, self._pair_counts[pair]))
 
             self._pair_counts[pair] = 0
+
         self._pair_counts.update(changes)
 
     def progress(self, *, steps=1):

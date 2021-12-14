@@ -15,4 +15,6 @@ def time_performance(fn):
 
 
 def pairwise(iterable):
+    # NOTE: In Python 3.10 this is part of `itertools`.
+
     return zip(iter(iterable), iter(iterable[1:]))
