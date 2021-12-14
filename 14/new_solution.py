@@ -1,65 +1,76 @@
+import math
 from collections import Counter
+from operator import itemgetter
 from pathlib import Path
-from timeit import default_timer
+from utils import time_performance, pairwise
 
 
 TEST_DATA_FILE = Path("test_input.txt")
 DATA_FILE = Path("input.txt")
 
 
-def pairwise(iterable):
-    return zip(iter(iterable), iter(iterable[1:]))
+class PolymerFormula:
+    def __init__(self, data_file: Path):
+        with data_file.open() as f:
+            stripped_line_iter = map(str.strip, f)
+
+            template = next(stripped_line_iter)
+            next(stripped_line_iter)  # Skip empty line.
+            rules = dict((pair, element) for pair, element in (line.split(" -> ") for line in stripped_line_iter))
+
+        self.template = template
+        self.rules = rules
+        self._init_pair_counts()
+
+    def _init_pair_counts(self):
+        template_pairs = ["".join(pair) for pair in pairwise(self.template)]
+        self._pair_counts = Counter(dict.fromkeys(self.rules.keys(), 0))
+        self._pair_counts.update(template_pairs)
+
+    def _progress_one_step(self):
+        changes = dict.fromkeys(self._pair_counts, 0)
+        for pair in self._pair_counts:
+            if self._pair_counts[pair] == 0:
+                continue
+
+            new_element = self.rules[pair]
+            new_pairs = (pair[0] + new_element, new_element + pair[1])
+
+            for p in new_pairs:
+                changes[p] += self._pair_counts[pair]
+
+            self._pair_counts[pair] = 0
+        self._pair_counts.update(changes)
+
+    def progress(self, *, steps=1):
+        for _ in range(steps):
+            self._progress_one_step()
+
+    @property
+    def element_counts(self):
+        double_counts = Counter(dict.fromkeys(set(el for pair in self._pair_counts.keys() for el in pair), 0))
+
+        for pair, count in self._pair_counts.items():
+            double_counts[pair[0]] += count
+            double_counts[pair[1]] += count
+
+        counts = {el: math.ceil(count / 2) for el, count in double_counts.items()}
+        return counts
 
 
-def read_instructions(data_file: Path):
-    polymer_template, rules_str = data_file.read_text().split("\n\n")
-    rules = dict((from_.strip(), to.strip()) for from_, to in (line.split(" ->") for line in rules_str.splitlines()))
+@time_performance
+def main():
+    polymer_formula = PolymerFormula(TEST_DATA_FILE)
 
-    return polymer_template.strip(), rules
+    polymer_formula.progress(steps=10)
 
+    element_counts = polymer_formula.element_counts
+    most_common_element = max(element_counts.items(), key=itemgetter(1))
+    least_common_element = min(element_counts.items(), key=itemgetter(1))
 
-def progress(counts, rules):
-    changes = dict.fromkeys(counts, 0)
-    for pair in counts:
-        if counts[pair] == 0:
-            continue
-
-        new_element = rules[pair]
-        new_pairs = (pair[0] + new_element, new_element + pair[1])
-
-        for p in new_pairs:
-            changes[p] += counts[pair]
-
-        counts[pair] = 0
-    counts.update(changes)
-
-
-def count_elements(pair_counts):
-    counts = Counter(dict.fromkeys(set(el for pair in pair_counts.keys() for el in pair), 0))
-    for pair, count in pair_counts.items():
-        counts[pair[0]] += count
-        counts[pair[1]] += count
-    return counts
-
+    print(f"Most common element: {most_common_element[0]} with count {most_common_element[1]}.")
+    print(f"Least common element: {least_common_element[0]} with count {least_common_element[1]}.")
 
 
 if __name__ == "__main__":
-    start = default_timer()
-    template, rules = read_instructions(DATA_FILE)
-    init_pairs = [pair[0] + pair[1] for pair in pairwise(template)]
-    c = Counter(dict.fromkeys(rules.keys(), 0))
-    c.update(init_pairs)
-    # print(c)
-    for _ in range(40):
-        progress(c, rules)
-    print(c)
-    d = count_elements(c)
-    print(max(d.values()))
-    print(min(d.values()))
-    # print(c)
-    print(default_timer() - start)
-
-
-
-
-    # x = progress(x, rules)
+    main()
