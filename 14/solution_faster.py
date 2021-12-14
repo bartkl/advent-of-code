@@ -24,8 +24,7 @@ def replace(s: array, rules):
 
         pair = s[i] + s[i + 1]
         val = rules.get(pair)
-        if val:
-            s.insert(i + 1 , val)
+        s.insert(i + 1 , val)
 
         i += 2
 
@@ -35,10 +34,8 @@ if __name__ == "__main__":
     tmpl, rules = read_instructions(TEST_DATA_FILE)
     end = tmpl
     c = None
-    for i in range(10):
-        print(i)
-        _, c = replace(end, rules)
+    for i in range(1):
+        end, c = replace(end, rules)
     print(end)
     print(max(c.values()) - min(c.values()))
-    print(c)
     print(default_timer() - start)

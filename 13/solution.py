@@ -56,6 +56,7 @@ class Paper:
         for line in range(line_max):
             first_half = range(location - 1, -1, -1)
             second_half = range(location + 1, other_line_max)
+
             for i, (a, b) in enumerate(reversed(list(zip_longest(first_half, second_half)))):
                 if is_dot(line, a, b):
                     if direction == "x": p = (i, line)
