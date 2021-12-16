@@ -29,16 +29,11 @@ def _decode_literal_value(packet: Iterator[str]) -> int:
     return int(value, base=2)
 
 
-def _decode_subpackets_type_0(packet: Iterator[str], operation: Callable):
-    # for val in takewhile(_decode, subpackets):
-    #     operands.append(val)
-    # return operation(operands)
-
-    operands = []
-
+def _decode_subpackets_type_0(packet: Iterator[str], operation: Callable) -> int:
     subpackets_length = int(consume(packet, 15), 2)
     subpackets = iter(consume(packet, subpackets_length))
 
+    operands = []
     while True:
         try:
             val = _decode(subpackets)
@@ -47,12 +42,9 @@ def _decode_subpackets_type_0(packet: Iterator[str], operation: Callable):
             return operation(operands)
 
 
-def _decode_subpackets_type_1(packet: Iterator[str], operation: Callable):
-    operands = []
+def _decode_subpackets_type_1(packet: Iterator[str], operation: Callable) -> int:
     num_subpackets = int(consume(packet, 11), 2)
-
-    for _ in range(num_subpackets):
-        operands.append(_decode(packet))
+    operands = [_decode(packet) for _ in range(num_subpackets)]
 
     return operation(operands)
 
