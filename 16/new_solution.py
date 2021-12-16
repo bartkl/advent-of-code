@@ -20,13 +20,6 @@ OPERATIONS = {
 }
 
 
-def consume(iterable, n, default=None):
-    return "".join(islice(iterable, n))
-
-
-class Decoder(Callable):
-    def __init__(self):
-
 
 
 def decode(packet: HexStr):

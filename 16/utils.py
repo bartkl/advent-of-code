@@ -7,8 +7,8 @@ BinStr = str
 HexInt = int
 
 
-def consume(iterable: Iterable[str], n: Optional[int] = 1) -> str:
-    return "".join(next(iter(iterable)) for _ in range(n))
+def consume(iterable, n, default=None):
+    return "".join(islice(iterable, n))
 
 
 def hex_digit_to_bin(digit: HexDigit) -> BinStr:
