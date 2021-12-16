@@ -30,7 +30,7 @@ def _decode(packet: Iterator[str]) -> int:
 
     if type_id == 4:
         return _decode_literal_value(packet)
-    else:
+    elif type_id in OPERATIONS:
         return _decode_operator_packet(packet, type_id)
 
 
