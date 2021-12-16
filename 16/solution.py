@@ -16,6 +16,14 @@ OPERATIONS = {
 }
 
 
+def decode(packet_hex: str) -> int:
+
+    packet_bin_str = hex_to_bin(packet_hex)
+    packet_iter = iter(packet_bin_str)
+
+    return _decode(packet_iter)
+
+
 def _decode_literal_value(packet: Iterator[str]) -> int:
     value = ""
 
@@ -68,14 +76,6 @@ def _decode(packet: Iterator[str]) -> int:
         return _decode_literal_value(packet)
     else:
         return _decode_operator_packet(packet, type_id)
-
-
-def decode(packet_hex: str) -> int:
-
-    packet_bin_str = hex_to_bin(packet_hex)
-    packet_iter = iter(packet_bin_str)
-
-    return _decode(packet_iter)
 
 
 def main():
