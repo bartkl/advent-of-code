@@ -59,6 +59,7 @@ def _decode_operator_packet(packet: Iterator[str], type_id: str) -> int:
     elif length_type_id == 1:
         return _decode_subpackets_type_1(packet, operation)
 
+
 def _decode(packet: Iterator[str]) -> int:
     version = consume(packet, 3)
     type_id = consume(packet, 3)
@@ -75,7 +76,6 @@ def decode(packet_hex: str) -> int:
     packet_iter = iter(packet_bin_str)
 
     return _decode(packet_iter)
-
 
 
 def main():
