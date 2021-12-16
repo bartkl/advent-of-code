@@ -39,7 +39,6 @@ def decode(packet: HexStr):
                 if prefix == "0":
                     break
 
-            print(int(number, 2))
             return int(number, base=2)
 
         else:
